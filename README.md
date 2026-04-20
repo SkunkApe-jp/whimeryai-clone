@@ -11,7 +11,7 @@ Paste any text and generate three learning outputs in the browser: a mindmap, a 
 ## How to Use
 
 1. Open `index.html` in any modern browser.
-2. Click the **gear icon** (top-right) to open AI settings.
+2. Hover the top-right corner to reveal the **gear icon**, then open AI settings.
 3. Choose a provider and enter your **API URL**, **API key**, and **model**, then click Save. Settings are stored in browser `localStorage`.
 4. Paste text into the input and click **Generate**.
 
@@ -33,7 +33,13 @@ Switching provider in the modal auto-fills the matching defaults; you can still 
 ```text
 project-root/
 |-- index.html
-`-- README.md
+|-- README.md
+`-- screenshot/
+    `-- screenshot.png
 ```
 
 The working tool is `index.html`.
+
+## Screenshot
+
+![Ars Verborum screenshot](screenshot/screenshot.png)
