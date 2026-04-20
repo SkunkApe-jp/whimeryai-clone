@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Whimery</title>
+<title>Ars Verborum</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -90,6 +90,33 @@
   }
   .gear-btn svg { width: 20px; height: 20px; fill: #6B6B6B; }
   .gear-btn.configured svg { fill: #16A34A; }
+
+  .download-btn {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    width: 44px;
+    height: 44px;
+    background: #fff;
+    border: 1.5px solid #E2DDD8;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    transition: border-color 0.2s, box-shadow 0.2s, opacity 0.2s;
+    z-index: 100;
+  }
+  .download-btn:hover:not(:disabled) {
+    border-color: #A78BFA;
+    box-shadow: 0 2px 12px rgba(167,139,250,0.25);
+  }
+  .download-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  .download-btn svg { width: 22px; height: 22px; fill: #6B6B6B; }
 
   /* Modal overlay */
   .modal-overlay {
@@ -348,6 +375,11 @@
 <button class="gear-btn" id="gearBtn" title="AI Settings">
   <svg viewBox="0 0 24 24"><path d="M19.14 12.94a7.07 7.07 0 0 0 .06-.94c0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96a7.04 7.04 0 0 0-1.62-.94l-.36-2.54a.48.48 0 0 0-.48-.41h-3.84a.48.48 0 0 0-.48.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.48.48 0 0 0-.59.22L2.74 8.87a.48.48 0 0 0 .12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.37 1.03.7 1.62.94l.36 2.54c.05.24.26.41.48.41h3.84c.24 0 .44-.17.48-.41l.36-2.54c.59-.24 1.13-.57 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.49.49 0 0 0-.12-.61l-2.03-1.58zM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2z"/></svg>
 </button>
+<button class="download-btn" id="downloadBtn" title="Download mindmap" disabled>
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M5 20h14v-2H5v2zm7-18-5.5 5.5 1.41 1.41L11 5.83V16h2V5.83l3.09 3.08 1.41-1.41L12 2z"></path>
+  </svg>
+</button>
 
 <!-- Settings modal -->
 <div class="modal-overlay" id="modalOverlay">
@@ -372,7 +404,7 @@
 </div>
 
 <div class="header">
-  <h1>Whimery</h1>
+  <h1>Ars Verborum</h1>
   <p>Paste any text — get a mindmap, a word, and a journey</p>
 </div>
 
@@ -397,6 +429,7 @@
   <div class="card" id="journeyCard"></div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
 <script>
 const COLORS = [
   { node: "#C084FC", edge: "#C084FC", leaf: "#E9D5FF", text: "#581C87" },
@@ -433,6 +466,7 @@ const cfgApiKey    = document.getElementById("cfgApiKey");
 const cfgModel     = document.getElementById("cfgModel");
 const modalCancel  = document.getElementById("modalCancel");
 const modalSave    = document.getElementById("modalSave");
+const downloadBtn  = document.getElementById("downloadBtn");
 
 const PROVIDER_DEFAULTS = {
   anthropic: {
@@ -455,10 +489,10 @@ const DEFAULTS = {
 };
 
 function loadConfig() {
-  try { return JSON.parse(localStorage.getItem("whimery_config")) || {}; } catch { return {}; }
+  try { return JSON.parse(localStorage.getItem("ars_verborum_config")) || {}; } catch { return {}; }
 }
 function saveConfig(cfg) {
-  localStorage.setItem("whimery_config", JSON.stringify(cfg));
+  localStorage.setItem("ars_verborum_config", JSON.stringify(cfg));
 }
 function getConfig() {
   const stored = loadConfig();
@@ -530,6 +564,8 @@ modalSave.addEventListener("click", () => {
 });
 
 refreshGearIcon();
+
+downloadBtn.addEventListener("click", downloadMindmap);
 
 /* ---- Button state ---- */
 function updateBtnState() {
@@ -734,102 +770,167 @@ function renderMindmap(data) {
     });
   });
 
-  const NS = "http://www.w3.org/2000/svg";
-  const svg = document.createElementNS(NS, "svg");
-  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
-  svg.setAttribute("width", "100%");
-  svg.setAttribute("height", "100%");
-  svg.style.overflow = "visible";
-
-  edges.forEach(e => {
-    const line = document.createElementNS(NS, "line");
-    line.setAttribute("x1", e.x1); line.setAttribute("y1", e.y1);
-    line.setAttribute("x2", e.x2); line.setAttribute("y2", e.y2);
-    line.setAttribute("stroke", e.color);
-    line.setAttribute("stroke-width", 6);
-    line.setAttribute("stroke-linecap", "round");
-    line.setAttribute("opacity", 0.85);
-    svg.appendChild(line);
-  });
-
-  leaves.forEach(nd => {
-    const w = Math.max(nd.label.length * 9 + 24, 72);
-    const h = 36;
-    const g = document.createElementNS(NS, "g");
-
-    const rect = document.createElementNS(NS, "rect");
-    rect.setAttribute("x", nd.x - w / 2); rect.setAttribute("y", nd.y - h / 2);
-    rect.setAttribute("width", w); rect.setAttribute("height", h);
-    rect.setAttribute("rx", 8);
-    rect.setAttribute("fill", nd.color.leaf);
-    rect.setAttribute("stroke", nd.color.node);
-    rect.setAttribute("stroke-width", 2);
-    g.appendChild(rect);
-
-    const shadow = document.createElementNS(NS, "rect");
-    shadow.setAttribute("x", nd.x - w / 2); shadow.setAttribute("y", nd.y + h / 2 - 5);
-    shadow.setAttribute("width", w); shadow.setAttribute("height", 5);
-    shadow.setAttribute("fill", nd.color.node); shadow.setAttribute("opacity", 0.25);
-    g.appendChild(shadow);
-
-    const txt = document.createElementNS(NS, "text");
-    txt.setAttribute("x", nd.x); txt.setAttribute("y", nd.y + 1);
-    txt.setAttribute("text-anchor", "middle");
-    txt.setAttribute("dominant-baseline", "middle");
-    txt.setAttribute("font-size", 14);
-    txt.setAttribute("font-family", "Georgia, serif");
-    txt.setAttribute("fill", nd.color.text);
-    txt.setAttribute("font-weight", 500);
-    txt.textContent = nd.label;
-    g.appendChild(txt);
-
-    svg.appendChild(g);
-  });
-
-  branches.forEach(nd => {
-    const g = document.createElementNS(NS, "g");
-
-    const circ = document.createElementNS(NS, "circle");
-    circ.setAttribute("cx", nd.x); circ.setAttribute("cy", nd.y);
-    circ.setAttribute("r", 38);
-    circ.setAttribute("fill", nd.color.node);
-    circ.setAttribute("opacity", 0.95);
-    g.appendChild(circ);
-
-    const txt = document.createElementNS(NS, "text");
-    txt.setAttribute("x", nd.x); txt.setAttribute("y", nd.y);
-    txt.setAttribute("text-anchor", "middle");
-    txt.setAttribute("dominant-baseline", "middle");
-    txt.setAttribute("font-size", 13);
-    txt.setAttribute("font-family", "Georgia, serif");
-    txt.setAttribute("fill", "#111");
-    txt.setAttribute("font-weight", 700);
-    txt.textContent = nd.label;
-    g.appendChild(txt);
-
-    svg.appendChild(g);
-  });
-
-  /* Center node */
-  const cc = document.createElementNS(NS, "circle");
-  cc.setAttribute("cx", cx); cc.setAttribute("cy", cy);
-  cc.setAttribute("r", 52);
-  cc.setAttribute("fill", CENTER_COLOR.node);
-  svg.appendChild(cc);
-
-  const ct = document.createElementNS(NS, "text");
-  ct.setAttribute("x", cx); ct.setAttribute("y", cy);
-  ct.setAttribute("text-anchor", "middle");
-  ct.setAttribute("dominant-baseline", "middle");
-  ct.setAttribute("font-size", 15);
-  ct.setAttribute("font-family", "Georgia, serif");
-  ct.setAttribute("fill", CENTER_COLOR.text);
-  ct.setAttribute("font-weight", 700);
-  ct.textContent = data.center;
-  svg.appendChild(ct);
-
   mindmapCard.innerHTML = "";
-  mindmapCard.appendChild(svg);
+  const svg = d3.select(mindmapCard)
+    .append("svg")
+    .attr("id", "mindmapSvg")
+    .attr("viewBox", `0 0 ${W} ${H}`)
+    .attr("width", "100%")
+    .attr("height", "100%")
+    .style("overflow", "visible");
+
+  svg.append("g")
+    .selectAll("line")
+    .data(edges)
+    .enter()
+    .append("line")
+    .attr("x1", d => d.x1)
+    .attr("y1", d => d.y1)
+    .attr("x2", d => d.x2)
+    .attr("y2", d => d.y2)
+    .attr("stroke", d => d.color)
+    .attr("stroke-width", 6)
+    .attr("stroke-linecap", "round")
+    .attr("opacity", 0.85);
+
+  const leafGroup = svg.append("g")
+    .selectAll("g")
+    .data(leaves)
+    .enter()
+    .append("g");
+
+  leafGroup.each(function(nd) {
+    const g = d3.select(this);
+    const label = truncateLabel(nd.label, 16);
+    const w = Math.min(Math.max(label.length * 9 + 24, 72), 180);
+    const h = 36;
+
+    g.append("rect")
+      .attr("x", nd.x - w / 2)
+      .attr("y", nd.y - h / 2)
+      .attr("width", w)
+      .attr("height", h)
+      .attr("rx", 8)
+      .attr("fill", nd.color.leaf)
+      .attr("stroke", nd.color.node)
+      .attr("stroke-width", 2);
+
+    g.append("rect")
+      .attr("x", nd.x - w / 2)
+      .attr("y", nd.y + h / 2 - 5)
+      .attr("width", w)
+      .attr("height", 5)
+      .attr("fill", nd.color.node)
+      .attr("opacity", 0.25);
+
+    g.append("text")
+      .attr("x", nd.x)
+      .attr("y", nd.y + 1)
+      .attr("text-anchor", "middle")
+      .attr("dominant-baseline", "middle")
+      .attr("font-size", 14)
+      .attr("font-family", "Georgia, serif")
+      .attr("fill", nd.color.text)
+      .attr("font-weight", 500)
+      .text(label);
+  });
+
+  const branchGroup = svg.append("g")
+    .selectAll("g")
+    .data(branches)
+    .enter()
+    .append("g");
+
+  branchGroup.append("circle")
+    .attr("cx", d => d.x)
+    .attr("cy", d => d.y)
+    .attr("r", 38)
+    .attr("fill", d => d.color.node)
+    .attr("opacity", 0.95);
+
+  branchGroup.each(function(nd) {
+    drawWrappedText(
+      d3.select(this),
+      nd.label,
+      nd.x,
+      nd.y,
+      60,
+      2,
+      13,
+      "#111",
+      700
+    );
+  });
+
+  svg.append("circle")
+    .attr("cx", cx)
+    .attr("cy", cy)
+    .attr("r", 52)
+    .attr("fill", CENTER_COLOR.node);
+
+  drawWrappedText(
+    svg,
+    data.center || "",
+    cx,
+    cy,
+    84,
+    2,
+    15,
+    CENTER_COLOR.text,
+    700
+  );
+
+  downloadBtn.disabled = false;
+}
+
+function truncateLabel(label, maxChars) {
+  const text = (label || "").trim();
+  if (text.length <= maxChars) return text;
+  return text.slice(0, Math.max(0, maxChars - 1)).trimEnd() + "…";
+}
+
+function drawWrappedText(group, text, x, y, maxWidth, maxLines, fontSize, color, weight) {
+  const words = (text || "").trim().split(/\s+/).filter(Boolean);
+  if (!words.length) return;
+
+  const lineCharCap = Math.max(1, Math.floor(maxWidth / (fontSize * 0.55)));
+  const lines = [];
+  let line = "";
+
+  words.forEach(word => {
+    const candidate = line ? `${line} ${word}` : word;
+    if (candidate.length <= lineCharCap) {
+      line = candidate;
+      return;
+    }
+    if (line) lines.push(line);
+    line = word;
+  });
+  if (line) lines.push(line);
+
+  const finalLines = lines.slice(0, maxLines).map((ln, i) => {
+    if (i !== maxLines - 1 || lines.length <= maxLines) return ln;
+    return truncateLabel(ln, lineCharCap);
+  });
+
+  const textEl = group.append("text")
+    .attr("x", x)
+    .attr("y", y)
+    .attr("text-anchor", "middle")
+    .attr("dominant-baseline", "middle")
+    .attr("font-size", fontSize)
+    .attr("font-family", "Georgia, serif")
+    .attr("fill", color)
+    .attr("font-weight", weight);
+
+  const lineHeight = fontSize + 2;
+  const startDy = -((finalLines.length - 1) * lineHeight) / 2;
+  finalLines.forEach((ln, i) => {
+    textEl.append("tspan")
+      .attr("x", x)
+      .attr("dy", i === 0 ? startDy : lineHeight)
+      .text(ln);
+  });
 }
 
 /* ---- Vocabulary Card ---- */
@@ -866,6 +967,24 @@ function esc(str) {
   const d = document.createElement("div");
   d.textContent = str || "";
   return d.innerHTML;
+}
+
+function downloadMindmap() {
+  const svgEl = document.getElementById("mindmapSvg");
+  if (!svgEl) return;
+
+  const serializer = new XMLSerializer();
+  const source = serializer.serializeToString(svgEl);
+  const blob = new Blob([source], { type: "image/svg+xml;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "mindmap.svg";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
 }
 </script>
 </body>
