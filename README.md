@@ -10,7 +10,7 @@ Paste any text and get back a mindmap, a vocabulary card, and a short visual jou
 
 ## How to Use
 
-1. Open `mindmap-generator.html` in any modern browser.
+1. Open `index.html` in any modern browser.
 2. Click the **gear icon** (top-right) to open AI settings.
 3. Pick a **Provider**, enter your **API URL**, **API key**, and **model**, then click Save. Settings are stored in your browser's `localStorage` and persist across sessions.
 4. Paste your text into the box and click **Generate**.
@@ -32,9 +32,8 @@ Switching provider in the modal auto-fills the matching defaults; you can still 
 
 ```text
 whimeryai-clone/
-|-- mindmap-generator.html
-|-- mindmap-generator.jsx
+|-- index.html
 `-- README.md
 ```
 
-`mindmap-generator.jsx` is kept as the original React UI reference. The working tool is `mindmap-generator.html`.
+The working tool is `index.html`.
