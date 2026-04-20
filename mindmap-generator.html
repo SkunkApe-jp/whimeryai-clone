@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Whimery</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    min-height: 100vh;
+    background: #F8F6F1;
+    font-family: Georgia, serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px 60px;
+  }
+
+  .header { text-align: center; margin-bottom: 32px; }
+  .header h1 {
+    font-size: 34px;
+    font-weight: 700;
+    color: #1a1a2e;
+    letter-spacing: -0.5px;
+  }
+  .header p {
+    font-size: 15px;
+    color: #6B6B6B;
+    margin-top: 6px;
+    font-style: italic;
+  }
+
+  .input-card {
+    width: 100%;
+    max-width: 660px;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+    padding: 24px;
+    margin-bottom: 28px;
+  }
+
+  textarea {
+    width: 100%;
+    min-height: 130px;
+    border: 1.5px solid #E2DDD8;
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-size: 15px;
+    font-family: Georgia, serif;
+    color: #2a2a2a;
+    background: #FDFCFA;
+    resize: vertical;
+    outline: none;
+    line-height: 1.65;
+  }
+  textarea:focus { border-color: #A78BFA; }
+
+  .input-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 14px;
+  }
+
+  .word-count { font-size: 13px; color: #aaa; }
+
+  .generate-btn {
+    background: #1E3A8A;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 28px;
+    font-size: 15px;
+    font-family: Georgia, serif;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .generate-btn:disabled {
+    background: #C4B5FD;
+    cursor: not-allowed;
+  }
+
+  .error-msg {
+    color: #DC2626;
+    font-size: 14px;
+    margin-bottom: 16px;
+    display: none;
+  }
+
+  .loading-card {
+    width: 100%;
+    max-width: 660px;
+    height: 180px;
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #E9D5FF;
+    border-top: 4px solid #7C3AED;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  .loading-text {
+    color: #9CA3AF;
+    font-size: 14px;
+    font-style: italic;
+  }
+
+  .results {
+    width: 100%;
+    max-width: 660px;
+    display: none;
+    flex-direction: column;
+    gap: 24px;
+    animation: fadeUp 0.5s ease;
+  }
+
+  .card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 32px 28px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+  }
+
+  .mindmap-card { padding: 20px 12px; }
+
+  /* Vocabulary Card */
+  .vocab-word {
+    font-size: 58px;
+    font-weight: 700;
+    color: #1E3A8A;
+    line-height: 1.1;
+    letter-spacing: -1px;
+    margin-bottom: 10px;
+  }
+  .vocab-ipa {
+    font-size: 17px;
+    color: #6B7EAA;
+    font-family: monospace;
+    margin-bottom: 14px;
+    letter-spacing: 0.5px;
+  }
+  .vocab-def-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+  .vocab-pos {
+    border-radius: 6px;
+    padding: 2px 10px;
+    font-size: 13px;
+    font-weight: 700;
+    font-style: italic;
+    color: #374151;
+    font-family: Georgia, serif;
+  }
+  .vocab-definition {
+    font-size: 15px;
+    color: #374151;
+    font-family: Georgia, serif;
+  }
+  .fun-fact-wrapper {
+    position: relative;
+    margin-bottom: 24px;
+  }
+  .fun-fact-badge {
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #FDE68A;
+    border-radius: 20px;
+    padding: 4px 18px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #78350F;
+    font-family: Georgia, serif;
+    white-space: nowrap;
+    z-index: 1;
+  }
+  .fun-fact-body {
+    background: #EFF6FF;
+    border-radius: 14px;
+    padding: 22px 18px 16px;
+    font-size: 15px;
+    color: #374151;
+    font-family: Georgia, serif;
+    line-height: 1.65;
+    text-align: center;
+  }
+  .vocab-example {
+    font-size: 15px;
+    color: #6B7280;
+    font-family: Georgia, serif;
+    font-style: italic;
+    text-align: center;
+    border-top: 1px solid #F3F4F6;
+    padding-top: 16px;
+  }
+
+  /* Visual Journey Card */
+  .journey-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin-bottom: 20px;
+  }
+  .journey-narrative {
+    font-size: 16px;
+    color: #374151;
+    line-height: 1.85;
+    margin-bottom: 24px;
+    text-align: justify;
+  }
+  .journey-highlight {
+    background: #DBEAFE;
+    border-radius: 10px;
+    padding: 14px 18px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #1E40AF;
+    line-height: 1.55;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Whimery</h1>
+  <p>Paste any text — get a mindmap, a word, and a journey</p>
+</div>
+
+<div class="input-card">
+  <textarea id="inputText" placeholder="Paste a paragraph, quote, poem, or any text..."></textarea>
+  <div class="input-footer">
+    <span class="word-count" id="wordCount"></span>
+    <button class="generate-btn" id="generateBtn" disabled>Generate</button>
+  </div>
+</div>
+
+<p class="error-msg" id="errorMsg"></p>
+
+<div class="loading-card" id="loadingCard">
+  <div class="spinner"></div>
+  <p class="loading-text">Reading between the lines...</p>
+</div>
+
+<div class="results" id="results">
+  <div class="card mindmap-card" id="mindmapCard"></div>
+  <div class="card" id="vocabCard"></div>
+  <div class="card" id="journeyCard"></div>
+</div>
+
+<script>
+const COLORS = [
+  { node: "#C084FC", edge: "#C084FC", leaf: "#E9D5FF", text: "#581C87" },
+  { node: "#FDE047", edge: "#FDE047", leaf: "#FEF9C3", text: "#713F12" },
+  { node: "#86EFAC", edge: "#86EFAC", leaf: "#DCFCE7", text: "#14532D" },
+  { node: "#F9A8D4", edge: "#F9A8D4", leaf: "#FCE7F3", text: "#831843" },
+  { node: "#67E8F9", edge: "#67E8F9", leaf: "#CFFAFE", text: "#164E63" },
+];
+const CENTER_COLOR = { node: "#1E3A8A", text: "#FFFFFF" };
+
+const POS_COLORS = {
+  adj:  "#DBEAFE",
+  adv:  "#D1FAE5",
+  noun: "#FEF3C7",
+  verb: "#FCE7F3",
+};
+
+const inputText   = document.getElementById("inputText");
+const wordCount   = document.getElementById("wordCount");
+const generateBtn = document.getElementById("generateBtn");
+const errorMsg    = document.getElementById("errorMsg");
+const loadingCard = document.getElementById("loadingCard");
+const resultsDiv  = document.getElementById("results");
+const mindmapCard = document.getElementById("mindmapCard");
+const vocabCard   = document.getElementById("vocabCard");
+const journeyCard = document.getElementById("journeyCard");
+
+inputText.addEventListener("input", () => {
+  const val = inputText.value.trim();
+  generateBtn.disabled = val.length === 0;
+  wordCount.textContent = val.length > 0
+    ? val.split(/\s+/).filter(Boolean).length + " words"
+    : "";
+});
+
+generateBtn.addEventListener("click", generate);
+
+async function generate() {
+  const text = inputText.value.trim();
+  if (!text) return;
+
+  generateBtn.disabled = true;
+  generateBtn.textContent = "Thinking...";
+  errorMsg.style.display = "none";
+  resultsDiv.style.display = "none";
+  loadingCard.style.display = "flex";
+
+  const prompt = `Analyze the following text and return a JSON object with three sections. Return ONLY valid JSON, no markdown, no explanation, no code fences.
+
+{
+  "mindmap": {
+    "center": "1-2 word core theme",
+    "clusters": [
+      { "name": "BranchWord", "leaves": ["Word1", "Word2", "Word3"] },
+      { "name": "BranchWord", "leaves": ["Word1", "Word2", "Word3"] },
+      { "name": "BranchWord", "leaves": ["Word1", "Word2", "Word3"] }
+    ]
+  },
+  "vocabulary": {
+    "word": "one interesting or advanced word from the text",
+    "ipa": "IPA pronunciation e.g. /\u02C8w\u025C\u02D0rd/",
+    "pos": "adj or noun or verb or adv",
+    "definition": "clear concise definition",
+    "funFact": "one surprising or memorable fact about this word or its origin, 1-2 sentences",
+    "example": "a natural example sentence using the word"
+  },
+  "visualJourney": {
+    "narrative": "A vivid immersive 3-4 sentence narrative drawing the reader into the scene or subject, using sensory second-person language where possible",
+    "highlight": "One interesting factual sentence from or related to the text, not repeating the narrative"
+  }
+}
+
+Rules:
+- mindmap: 3 clusters, 2-3 leaves each, evocative mood words not literal descriptors
+- vocabulary: pick a non-trivial word, avoid the most common words
+- English only, no emojis
+
+Text:
+"""
+${text}
+"""`;
+
+  try {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1500,
+        messages: [{ role: "user", content: prompt }],
+      }),
+    });
+
+    const data = await res.json();
+    const raw = (data.content || []).map(b => b.text || "").join("");
+    const clean = raw.replace(/```json|```/g, "").trim();
+    const parsed = JSON.parse(clean);
+
+    renderMindmap(parsed.mindmap);
+    renderVocabulary(parsed.vocabulary);
+    renderJourney(parsed.visualJourney);
+
+    loadingCard.style.display = "none";
+    resultsDiv.style.display = "flex";
+  } catch (e) {
+    loadingCard.style.display = "none";
+    errorMsg.textContent = "Could not generate. Please try again.";
+    errorMsg.style.display = "block";
+  } finally {
+    generateBtn.disabled = !inputText.value.trim();
+    generateBtn.textContent = "Generate";
+  }
+}
+
+/* ---- Mindmap SVG ---- */
+function renderMindmap(data) {
+  const W = 700, H = 500;
+  const cx = W / 2, cy = H / 2;
+  const branchR = 155, leafR = 100;
+
+  const clusters = data.clusters || [];
+  const n = clusters.length;
+  const angles = clusters.map((_, i) => (2 * Math.PI * i) / n - Math.PI / 2);
+
+  const edges = [];
+  const branches = [];
+  const leaves = [];
+
+  clusters.forEach((cluster, ci) => {
+    const angle = angles[ci];
+    const color = COLORS[ci % COLORS.length];
+    const bx = cx + branchR * Math.cos(angle);
+    const by = cy + branchR * Math.sin(angle);
+
+    edges.push({ x1: cx, y1: cy, x2: bx, y2: by, color: color.edge });
+    branches.push({ x: bx, y: by, label: cluster.name, color });
+
+    const lvs = cluster.leaves || [];
+    const lCount = lvs.length;
+    const spread = Math.PI * 0.6;
+    lvs.forEach((leaf, li) => {
+      const offset = lCount > 1
+        ? -spread / 2 + (spread / (lCount - 1)) * li
+        : 0;
+      const la = angle + offset;
+      const lx = bx + leafR * Math.cos(la);
+      const ly = by + leafR * Math.sin(la);
+
+      edges.push({ x1: bx, y1: by, x2: lx, y2: ly, color: color.edge });
+      leaves.push({ x: lx, y: ly, label: leaf, color });
+    });
+  });
+
+  const NS = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(NS, "svg");
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  svg.setAttribute("width", "100%");
+  svg.setAttribute("height", "100%");
+  svg.style.overflow = "visible";
+
+  edges.forEach(e => {
+    const line = document.createElementNS(NS, "line");
+    line.setAttribute("x1", e.x1); line.setAttribute("y1", e.y1);
+    line.setAttribute("x2", e.x2); line.setAttribute("y2", e.y2);
+    line.setAttribute("stroke", e.color);
+    line.setAttribute("stroke-width", 6);
+    line.setAttribute("stroke-linecap", "round");
+    line.setAttribute("opacity", 0.85);
+    svg.appendChild(line);
+  });
+
+  leaves.forEach(nd => {
+    const w = Math.max(nd.label.length * 9 + 24, 72);
+    const h = 36;
+    const g = document.createElementNS(NS, "g");
+
+    const rect = document.createElementNS(NS, "rect");
+    rect.setAttribute("x", nd.x - w / 2); rect.setAttribute("y", nd.y - h / 2);
+    rect.setAttribute("width", w); rect.setAttribute("height", h);
+    rect.setAttribute("rx", 8);
+    rect.setAttribute("fill", nd.color.leaf);
+    rect.setAttribute("stroke", nd.color.node);
+    rect.setAttribute("stroke-width", 2);
+    g.appendChild(rect);
+
+    const shadow = document.createElementNS(NS, "rect");
+    shadow.setAttribute("x", nd.x - w / 2); shadow.setAttribute("y", nd.y + h / 2 - 5);
+    shadow.setAttribute("width", w); shadow.setAttribute("height", 5);
+    shadow.setAttribute("fill", nd.color.node); shadow.setAttribute("opacity", 0.25);
+    g.appendChild(shadow);
+
+    const txt = document.createElementNS(NS, "text");
+    txt.setAttribute("x", nd.x); txt.setAttribute("y", nd.y + 1);
+    txt.setAttribute("text-anchor", "middle");
+    txt.setAttribute("dominant-baseline", "middle");
+    txt.setAttribute("font-size", 14);
+    txt.setAttribute("font-family", "Georgia, serif");
+    txt.setAttribute("fill", nd.color.text);
+    txt.setAttribute("font-weight", 500);
+    txt.textContent = nd.label;
+    g.appendChild(txt);
+
+    svg.appendChild(g);
+  });
+
+  branches.forEach(nd => {
+    const g = document.createElementNS(NS, "g");
+
+    const circ = document.createElementNS(NS, "circle");
+    circ.setAttribute("cx", nd.x); circ.setAttribute("cy", nd.y);
+    circ.setAttribute("r", 38);
+    circ.setAttribute("fill", nd.color.node);
+    circ.setAttribute("opacity", 0.95);
+    g.appendChild(circ);
+
+    const txt = document.createElementNS(NS, "text");
+    txt.setAttribute("x", nd.x); txt.setAttribute("y", nd.y);
+    txt.setAttribute("text-anchor", "middle");
+    txt.setAttribute("dominant-baseline", "middle");
+    txt.setAttribute("font-size", 13);
+    txt.setAttribute("font-family", "Georgia, serif");
+    txt.setAttribute("fill", "#111");
+    txt.setAttribute("font-weight", 700);
+    txt.textContent = nd.label;
+    g.appendChild(txt);
+
+    svg.appendChild(g);
+  });
+
+  /* Center node */
+  const cc = document.createElementNS(NS, "circle");
+  cc.setAttribute("cx", cx); cc.setAttribute("cy", cy);
+  cc.setAttribute("r", 52);
+  cc.setAttribute("fill", CENTER_COLOR.node);
+  svg.appendChild(cc);
+
+  const ct = document.createElementNS(NS, "text");
+  ct.setAttribute("x", cx); ct.setAttribute("y", cy);
+  ct.setAttribute("text-anchor", "middle");
+  ct.setAttribute("dominant-baseline", "middle");
+  ct.setAttribute("font-size", 15);
+  ct.setAttribute("font-family", "Georgia, serif");
+  ct.setAttribute("fill", CENTER_COLOR.text);
+  ct.setAttribute("font-weight", 700);
+  ct.textContent = data.center;
+  svg.appendChild(ct);
+
+  mindmapCard.innerHTML = "";
+  mindmapCard.appendChild(svg);
+}
+
+/* ---- Vocabulary Card ---- */
+function renderVocabulary(vocab) {
+  const posKey = (vocab.pos || "").toLowerCase().slice(0, 4);
+  const bg = POS_COLORS[posKey] || "#F3F4F6";
+
+  vocabCard.innerHTML = `
+    <div class="vocab-word">${esc(vocab.word)}</div>
+    <div class="vocab-ipa">${esc(vocab.ipa)}</div>
+    <div class="vocab-def-row">
+      <span class="vocab-pos" style="background:${bg}">${esc(vocab.pos)}.</span>
+      <span class="vocab-definition">${esc(vocab.definition)}</span>
+    </div>
+    <div class="fun-fact-wrapper">
+      <div class="fun-fact-badge">Fun Fact</div>
+      <div class="fun-fact-body">${esc(vocab.funFact)}</div>
+    </div>
+    <div class="vocab-example">${esc(vocab.example)}</div>
+  `;
+}
+
+/* ---- Visual Journey Card ---- */
+function renderJourney(journey) {
+  journeyCard.innerHTML = `
+    <div class="journey-title">Visual Journey</div>
+    <p class="journey-narrative">${esc(journey.narrative)}</p>
+    <div class="journey-highlight">${esc(journey.highlight)}</div>
+  `;
+}
+
+/* ---- Helpers ---- */
+function esc(str) {
+  const d = document.createElement("div");
+  d.textContent = str || "";
+  return d.innerHTML;
+}
+</script>
+</body>
+</html>
