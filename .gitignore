@@ -1,48 +1,24 @@
-# API Configuration (contains sensitive keys)
-config.json
-
-# Output files
-mindmap.svg
-whimery_output.html
-
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-
-# Virtual environments
-venv/
-env/
-ENV/
-.venv
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# OS
+# OS metadata
 .DS_Store
 Thumbs.db
 
-# Logs
-*.log
+# Editor/IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Python artifacts (legacy)
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Node / misc
+node_modules/
+
+# Environment / secrets
+.env
+.env.local
+config.json
