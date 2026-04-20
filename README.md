@@ -12,10 +12,21 @@ Paste any text and get back a mindmap, a vocabulary card, and a short visual jou
 
 1. Open `mindmap-generator.html` in any modern browser.
 2. Click the **gear icon** (top-right) to open AI settings.
-3. Enter your **API URL**, **API key**, and **model**, then click Save. Settings are stored in your browser's `localStorage` and persist across sessions.
+3. Pick a **Provider**, enter your **API URL**, **API key**, and **model**, then click Save. Settings are stored in your browser's `localStorage` and persist across sessions.
 4. Paste your text into the box and click **Generate**.
 
-The default endpoint is Anthropic (`https://api.anthropic.com/v1/messages`) with `claude-sonnet-4-20250514`.
+## Providers
+
+Two provider modes are supported:
+
+- **Anthropic** — uses the Messages API with `x-api-key` + `anthropic-version` headers.
+  - Default URL: `https://api.anthropic.com/v1/messages`
+  - Default model: `claude-sonnet-4-20250514`
+- **OpenAI-compatible** — uses `Authorization: Bearer <key>` with the Chat Completions schema. Works with OpenAI, and any compatible endpoint (Together, Groq, OpenRouter, local servers like Ollama or LM Studio, etc.).
+  - Default URL: `https://api.openai.com/v1/chat/completions`
+  - Default model: `gpt-4o-mini`
+
+Switching provider in the modal auto-fills the matching defaults; you can still override the URL and model by hand.
 
 ## Project Files
 

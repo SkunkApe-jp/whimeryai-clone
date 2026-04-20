@@ -353,6 +353,11 @@
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal">
     <h2>AI Configuration</h2>
+    <label for="cfgProvider">Provider</label>
+    <select id="cfgProvider">
+      <option value="anthropic">Anthropic</option>
+      <option value="openai">OpenAI-compatible</option>
+    </select>
     <label for="cfgApiUrl">API URL</label>
     <input id="cfgApiUrl" type="text" placeholder="https://api.anthropic.com/v1/messages" />
     <label for="cfgApiKey">API Key</label>
@@ -422,16 +427,31 @@ const journeyCard = document.getElementById("journeyCard");
 /* ---- Settings modal ---- */
 const gearBtn      = document.getElementById("gearBtn");
 const modalOverlay = document.getElementById("modalOverlay");
+const cfgProvider  = document.getElementById("cfgProvider");
 const cfgApiUrl    = document.getElementById("cfgApiUrl");
 const cfgApiKey    = document.getElementById("cfgApiKey");
 const cfgModel     = document.getElementById("cfgModel");
 const modalCancel  = document.getElementById("modalCancel");
 const modalSave    = document.getElementById("modalSave");
 
+const PROVIDER_DEFAULTS = {
+  anthropic: {
+    apiUrl: "https://api.anthropic.com/v1/messages",
+    model:  "claude-sonnet-4-20250514",
+    keyPlaceholder: "sk-ant-...",
+  },
+  openai: {
+    apiUrl: "https://api.openai.com/v1/chat/completions",
+    model:  "gpt-4o-mini",
+    keyPlaceholder: "sk-...",
+  },
+};
+
 const DEFAULTS = {
-  apiUrl: "https://api.anthropic.com/v1/messages",
+  provider: "anthropic",
+  apiUrl: PROVIDER_DEFAULTS.anthropic.apiUrl,
   apiKey: "",
-  model:  "claude-sonnet-4-20250514",
+  model:  PROVIDER_DEFAULTS.anthropic.model,
 };
 
 function loadConfig() {
@@ -442,10 +462,13 @@ function saveConfig(cfg) {
 }
 function getConfig() {
   const stored = loadConfig();
+  const provider = PROVIDER_DEFAULTS[stored.provider] ? stored.provider : DEFAULTS.provider;
+  const providerDefaults = PROVIDER_DEFAULTS[provider];
   return {
-    apiUrl: stored.apiUrl || DEFAULTS.apiUrl,
+    provider,
+    apiUrl: stored.apiUrl || providerDefaults.apiUrl,
     apiKey: stored.apiKey || DEFAULTS.apiKey,
-    model:  stored.model  || DEFAULTS.model,
+    model:  stored.model  || providerDefaults.model,
   };
 }
 
@@ -454,11 +477,36 @@ function refreshGearIcon() {
   gearBtn.classList.toggle("configured", cfg.apiKey.length > 0);
 }
 
+/* Swap URL/model/key placeholders when the provider changes in the modal,
+   but only when the field still holds the previous provider's default. */
+cfgProvider.addEventListener("change", () => {
+  const prev = cfgProvider.dataset.prevProvider || DEFAULTS.provider;
+  const next = cfgProvider.value;
+  const prevDefaults = PROVIDER_DEFAULTS[prev];
+  const nextDefaults = PROVIDER_DEFAULTS[next];
+  if (!cfgApiUrl.value.trim() || cfgApiUrl.value.trim() === prevDefaults.apiUrl) {
+    cfgApiUrl.value = nextDefaults.apiUrl;
+  }
+  if (!cfgModel.value.trim() || cfgModel.value.trim() === prevDefaults.model) {
+    cfgModel.value = nextDefaults.model;
+  }
+  cfgApiUrl.placeholder = nextDefaults.apiUrl;
+  cfgModel.placeholder  = nextDefaults.model;
+  cfgApiKey.placeholder = nextDefaults.keyPlaceholder;
+  cfgProvider.dataset.prevProvider = next;
+});
+
 gearBtn.addEventListener("click", () => {
   const cfg = getConfig();
+  const providerDefaults = PROVIDER_DEFAULTS[cfg.provider];
+  cfgProvider.value = cfg.provider;
+  cfgProvider.dataset.prevProvider = cfg.provider;
   cfgApiUrl.value = cfg.apiUrl;
   cfgApiKey.value = cfg.apiKey;
   cfgModel.value  = cfg.model;
+  cfgApiUrl.placeholder = providerDefaults.apiUrl;
+  cfgModel.placeholder  = providerDefaults.model;
+  cfgApiKey.placeholder = providerDefaults.keyPlaceholder;
   modalOverlay.classList.add("open");
 });
 
@@ -468,10 +516,13 @@ modalOverlay.addEventListener("click", (e) => {
 });
 
 modalSave.addEventListener("click", () => {
+  const provider = PROVIDER_DEFAULTS[cfgProvider.value] ? cfgProvider.value : DEFAULTS.provider;
+  const providerDefaults = PROVIDER_DEFAULTS[provider];
   saveConfig({
-    apiUrl: cfgApiUrl.value.trim() || DEFAULTS.apiUrl,
+    provider,
+    apiUrl: cfgApiUrl.value.trim() || providerDefaults.apiUrl,
     apiKey: cfgApiKey.value.trim(),
-    model:  cfgModel.value.trim()  || DEFAULTS.model,
+    model:  cfgModel.value.trim()  || providerDefaults.model,
   });
   modalOverlay.classList.remove("open");
   refreshGearIcon();
@@ -545,29 +596,33 @@ ${text}
 
   try {
     const cfg = getConfig();
+    const req = buildRequest(cfg, prompt);
     const res = await fetch(cfg.apiUrl, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": cfg.apiKey,
-        "anthropic-version": "2023-06-01",
-        "anthropic-dangerous-direct-browser-access": "true",
-      },
-      body: JSON.stringify({
-        model: cfg.model,
-        max_tokens: 1500,
-        messages: [{ role: "user", content: prompt }],
-      }),
+      headers: req.headers,
+      body: JSON.stringify(req.body),
     });
 
-    const data = await res.json();
+    const responseText = await res.text();
+    let data = null;
+    try { data = responseText ? JSON.parse(responseText) : null; } catch { /* non-JSON response */ }
+
     if (!res.ok) {
-      const msg = data?.error?.message || `API request failed (HTTP ${res.status})`;
-      throw new Error(msg);
+      throw new Error(extractApiError(data, responseText, res.status));
     }
-    const raw = (data.content || []).map(b => b.text || "").join("");
+
+    const raw = extractContent(cfg.provider, data);
+    if (!raw) {
+      throw new Error("Empty response from model.");
+    }
     const clean = raw.replace(/```json|```/g, "").trim();
-    const parsed = JSON.parse(clean);
+
+    let parsed;
+    try {
+      parsed = JSON.parse(clean);
+    } catch {
+      throw new Error("Model did not return valid JSON.");
+    }
 
     renderMindmap(parsed.mindmap);
     renderVocabulary(parsed.vocabulary);
@@ -577,12 +632,67 @@ ${text}
     resultsDiv.style.display = "flex";
   } catch (e) {
     loadingCard.style.display = "none";
-    errorMsg.textContent = e.message || "Could not generate. Please try again.";
+    const detail = (e && e.message) ? e.message : String(e);
+    errorMsg.textContent = "Could not generate: " + detail;
     errorMsg.style.display = "block";
   } finally {
     updateBtnState();
     generateBtn.textContent = "Generate";
   }
+}
+
+function buildRequest(cfg, prompt) {
+  if (cfg.provider === "openai") {
+    return {
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + cfg.apiKey,
+      },
+      body: {
+        model: cfg.model,
+        max_tokens: 1500,
+        messages: [{ role: "user", content: prompt }],
+      },
+    };
+  }
+  return {
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": cfg.apiKey,
+      "anthropic-version": "2023-06-01",
+      "anthropic-dangerous-direct-browser-access": "true",
+    },
+    body: {
+      model: cfg.model,
+      max_tokens: 1500,
+      messages: [{ role: "user", content: prompt }],
+    },
+  };
+}
+
+function extractContent(provider, data) {
+  if (!data) return "";
+  if (provider === "openai") {
+    const choice = (data.choices && data.choices[0]) || {};
+    const msg = choice.message || {};
+    if (typeof msg.content === "string") return msg.content;
+    if (Array.isArray(msg.content)) {
+      return msg.content.map(p => (typeof p === "string" ? p : (p && p.text) || "")).join("");
+    }
+    return "";
+  }
+  return (data.content || []).map(b => b.text || "").join("");
+}
+
+function extractApiError(data, responseText, status) {
+  if (data && data.error) {
+    if (typeof data.error === "string") return data.error;
+    if (data.error.message) return data.error.message;
+  }
+  if (data && data.message) return data.message;
+  const body = (responseText || "").trim();
+  if (body) return "HTTP " + status + " - " + body.slice(0, 300);
+  return "HTTP " + status;
 }
 
 /* ---- Mindmap SVG ---- */
