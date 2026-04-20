@@ -2,6 +2,7 @@ import json
 import math
 import os
 import sys
+from html import escape
 from typing import Dict, List, Any
 from pathlib import Path
 
@@ -19,6 +20,8 @@ except ImportError:
     sys.exit(1)
 
 CONFIG_FILE = "config.json"
+APP_NAME = "Whimery"
+OUTPUT_HTML_FILE = "whimery_output.html"
 
 COLORS = [
     {"node": "#C084FC", "edge": "#C084FC", "leaf": "#E9D5FF", "text": "#581C87"},
@@ -191,8 +194,10 @@ def create_visual_journey_card_html(journey: Dict[str, str]) -> str:
     """
     return html
 
-def create_full_html_page(result: Dict[str, Any]) -> str:
-    mindmap_html = f'<div style="background: #fff; border-radius: 20px; padding: 20px 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.06);"><img src="mindmap.svg" width="100%" /></div>'
+def create_full_html_page(result: Dict[str, Any], source_text: str) -> str:
+    safe_text = escape(source_text)
+    word_count = len(source_text.split())
+    mindmap_html = '<div class="card map-card"><img src="mindmap.svg" width="100%" /></div>'
     vocab_html = create_vocabulary_card_html(result.get("vocabulary", {}))
     journey_html = create_visual_journey_card_html(result.get("visualJourney", {}))
     
@@ -201,7 +206,7 @@ def create_full_html_page(result: Dict[str, Any]) -> str:
     <html>
     <head>
         <meta charset="UTF-8">
-        <title>Whimery - Text Analysis</title>
+        <title>{APP_NAME} - Text Analysis</title>
         <style>
             body {{
                 min-height: 100vh;
@@ -212,13 +217,6 @@ def create_full_html_page(result: Dict[str, Any]) -> str:
                 align-items: center;
                 padding: 40px 20px 60px;
                 margin: 0;
-            }}
-            .container {{
-                width: 100%;
-                max-width: 660px;
-                display: flex;
-                flex-direction: column;
-                gap: 24px;
             }}
             .header {{
                 text-align: center;
@@ -237,15 +235,101 @@ def create_full_html_page(result: Dict[str, Any]) -> str:
                 margin-top: 6px;
                 font-style: italic;
             }}
+            .input-card {{
+                width: 100%;
+                max-width: 660px;
+                background: #fff;
+                border-radius: 16px;
+                box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+                padding: 24px;
+                margin-bottom: 28px;
+                box-sizing: border-box;
+            }}
+            .source-text {{
+                width: 100%;
+                min-height: 130px;
+                border: 1.5px solid #E2DDD8;
+                border-radius: 10px;
+                padding: 14px 16px;
+                font-size: 15px;
+                font-family: Georgia, serif;
+                color: #2a2a2a;
+                background: #FDFCFA;
+                resize: vertical;
+                outline: none;
+                line-height: 1.65;
+                box-sizing: border-box;
+            }}
+            .source-text[readonly] {{
+                cursor: default;
+            }}
+            .toolbar {{
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-top: 14px;
+            }}
+            .word-count {{
+                font-size: 13px;
+                color: #aaa;
+            }}
+            .generate-button {{
+                background: #1E3A8A;
+                color: #fff;
+                border: none;
+                border-radius: 10px;
+                padding: 10px 28px;
+                font-size: 15px;
+                font-family: Georgia, serif;
+                font-weight: 600;
+                cursor: default;
+            }}
+            .results {{
+                width: 100%;
+                max-width: 660px;
+                display: flex;
+                flex-direction: column;
+                gap: 24px;
+                animation: fadeUp 0.5s ease;
+            }}
+            .card {{
+                background: #fff;
+                border-radius: 20px;
+                box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+            }}
+            .map-card {{
+                padding: 20px 12px;
+            }}
+            img {{
+                display: block;
+            }}
+            @keyframes fadeUp {{
+                from {{
+                    opacity: 0;
+                    transform: translateY(12px);
+                }}
+                to {{
+                    opacity: 1;
+                    transform: none;
+                }}
+            }}
         </style>
     </head>
     <body>
         <div class="header">
-            <h1>Whimery</h1>
-            <p>Paste any text — get a mindmap, a word, and a journey</p>
+            <h1>{APP_NAME}</h1>
+            <p>Paste any text &mdash; get a mindmap, a word, and a journey</p>
         </div>
-        
-        <div class="container">
+
+        <div class="input-card">
+            <textarea class="source-text" readonly>{safe_text}</textarea>
+            <div class="toolbar">
+                <span class="word-count">{word_count} words</span>
+                <button class="generate-button" type="button">Generate</button>
+            </div>
+        </div>
+
+        <div class="results">
             {mindmap_html}
             {vocab_html}
             {journey_html}
@@ -351,7 +435,7 @@ Text:
     return json.loads(clean)
 
 def main():
-    print("Whimery - Text Analysis Tool")
+    print(f"{APP_NAME} - Text Analysis Tool")
     print("=" * 40)
     
     # Load configuration
@@ -390,14 +474,14 @@ def main():
         generate_mindmap_svg(result.get("mindmap", {}), "mindmap.svg")
         
         # Create HTML output
-        html_content = create_full_html_page(result)
-        with open("whimery_output.html", "w", encoding="utf-8") as f:
+        html_content = create_full_html_page(result, text)
+        with open(OUTPUT_HTML_FILE, "w", encoding="utf-8") as f:
             f.write(html_content)
         
         print("\nAnalysis complete!")
-        print(f"✓ Mindmap saved as: mindmap.svg")
-        print(f"✓ Full report saved as: whimery_output.html")
-        print("\nOpen whimery_output.html in your browser to view the results.")
+        print("Saved: mindmap.svg")
+        print(f"Saved: {OUTPUT_HTML_FILE}")
+        print(f"\nOpen {OUTPUT_HTML_FILE} in your browser to view the results.")
         
     except Exception as e:
         print(f"\nError during analysis: {str(e)}")

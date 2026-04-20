@@ -1,41 +1,43 @@
-# Whimery AI Clone
+# Whimery Python Clone
 
-A text analysis tool that generates beautiful mindmaps, vocabulary cards, and visual journey narratives from any text using AI.
+`Whimery Python Clone` is a small Python version of the JSX page in this repo. The goal is simple: keep the same soft, paper-toned look while generating the result as plain files from a Python script.
 
-![Whimery Demo](screenshot.png)
+- a mindmap in SVG
+- a vocabulary card for one strong word
+- a short visual journey written by the model
 
-## Features
+## What It Makes
 
-✨ **Mindmap Generation** - Creates a visual mindmap with clusters and leaves from your text  
-📚 **Vocabulary Card** - Extracts interesting words with definitions, IPA pronunciation, and fun facts  
-🎨 **Visual Journey** - Generates an immersive narrative that brings your text to life  
+When you run the script, you get:
 
-## Tech Stack
+- `mindmap.svg` for the visual map
+- `whimery_output.html` for the page with the same overall Whimery-style shell, the map, the word card, and the short narrative
 
-- **Python 3.x**
-- **svgwrite** - SVG mindmap generation
-- **requests** - API communication
-- **OpenAI-compatible APIs** - Works with OpenAI, Groq, LM Studio, Ollama, and more
+## What You Need
 
-## Installation
+- Python 3.7 or newer
+- `requests`
+- `svgwrite`
+- access to an OpenAI-compatible chat endpoint
 
-1. Clone the repository:
-```bash
-git clone https://github.com/SkunkApe-jp/whimeryai-clone.git
-cd whimeryai-clone
-```
+That endpoint can be OpenAI, Groq, LM Studio, Ollama, or anything else that speaks the same basic API shape.
 
-2. Install dependencies:
-```bash
+## Setup
+
+Install the two Python packages:
+
+```powershell
 pip install requests svgwrite
 ```
 
-3. Create your configuration file:
-```bash
-cp example.config.json config.json
+Copy the example config:
+
+```powershell
+Copy-Item example.config.json config.json
 ```
 
-4. Edit `config.json` with your API credentials:
+Then fill in `config.json`:
+
 ```json
 {
   "api_url": "https://api.openai.com/v1/chat/completions",
@@ -44,23 +46,22 @@ cp example.config.json config.json
 }
 ```
 
-## Usage
+## Run It
 
-Run the script:
-```bash
-python mindmap-generator.py
+```powershell
+python .\mindmap-generator.py
 ```
 
-1. Enter the text you want to analyze
-2. Press Enter twice to finish input
-3. Wait for AI analysis
-4. View the results in the generated files:
-   - `mindmap.svg` - Visual mindmap
-   - `whimery_output.html` - Complete HTML report
+Paste your text into the terminal.
 
-## Configuration Examples
+Press `Enter` on a blank line to finish.
 
-### OpenAI
+The script will call your model, build the map, and write the two output files into the project folder.
+
+## Example Configs
+
+OpenAI:
+
 ```json
 {
   "api_url": "https://api.openai.com/v1/chat/completions",
@@ -69,7 +70,8 @@ python mindmap-generator.py
 }
 ```
 
-### Groq
+Groq:
+
 ```json
 {
   "api_url": "https://api.groq.com/openai/v1/chat/completions",
@@ -78,7 +80,8 @@ python mindmap-generator.py
 }
 ```
 
-### LM Studio (Local)
+LM Studio:
+
 ```json
 {
   "api_url": "http://localhost:1234/v1/chat/completions",
@@ -87,7 +90,8 @@ python mindmap-generator.py
 }
 ```
 
-### Ollama (Local)
+Ollama:
+
 ```json
 {
   "api_url": "http://localhost:11434/v1/chat/completions",
@@ -96,54 +100,27 @@ python mindmap-generator.py
 }
 ```
 
-## Project Structure
-
-```
-whimeryai-clone/
-├── mindmap-generator.py      # Main Python script
-├── config.json               # Your API configuration (gitignored)
-├── example.config.json       # Example configuration
-├── mindmap-generator.jsx     # Original React version
-├── mindmap-generator_1.jsx   # Original React version
-├── .gitignore               # Git ignore rules
-└── README.md                # This file
-```
-
-## Output Files
-
-After running the script, you'll get:
-
-- **mindmap.svg** - A beautiful SVG mindmap visualization
-- **whimery_output.html** - A complete HTML report containing:
-  - Mindmap visualization
-  - Vocabulary card with word details
-  - Visual journey narrative
-
 ## How It Works
 
-1. **Input**: Paste any text (paragraph, quote, poem, etc.)
-2. **AI Analysis**: The script sends your text to an AI model with a structured prompt
-3. **Processing**: AI returns JSON with mindmap data, vocabulary, and narrative
-4. **Output Generation**: 
-   - SVG mindmap is created using svgwrite
-   - HTML report is generated with styled cards
-5. **Results**: Open the HTML file in your browser to view everything
+1. You paste in a paragraph, page, poem, note, or passage.
+2. The script sends that text to the configured model with a structured prompt.
+3. The model returns JSON for the map, the vocabulary card, and the visual journey.
+4. The script writes an SVG file and an HTML page shaped to match the JSX layout as closely as the Python flow allows.
 
-## Security Note
+## Project Files
 
-⚠️ **Never commit your `config.json` file!** It contains your API keys. The `.gitignore` file is configured to exclude it automatically.
+```text
+whimeryai-clone/
+|-- mindmap-generator.py
+|-- mindmap-generator.jsx
+|-- example.config.json
+|-- config.json
+|-- .gitignore
+`-- README.md
+```
 
-## Requirements
+`mindmap-generator.jsx` is kept here as the earlier UI reference. The working tool in this repo is the Python script.
 
-- Python 3.7+
-- requests library
-- svgwrite library
-- Access to an OpenAI-compatible API
+## A Small Note
 
-## License
-
-MIT License - feel free to use and modify as needed!
-
-## Original Project
-
-This is a Python conversion of the original React/JSX Whimery AI application, converted to work as a standalone command-line tool with flexible API support.
+Keep `config.json` out of version control. It holds your API key, and `.gitignore` is already set up to leave it alone.
