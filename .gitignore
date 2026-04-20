@@ -5,6 +5,9 @@ config.json
 mindmap.svg
 whimery_output.html
 
+# Original JSX files
+*.jsx
+
 # Python
 __pycache__/
 *.py[cod]
