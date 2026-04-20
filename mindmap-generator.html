@@ -66,6 +66,30 @@
 
   .word-count { font-size: 13px; color: #aaa; }
 
+  .api-key-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .api-key-label {
+    font-size: 13px;
+    color: #6B6B6B;
+    white-space: nowrap;
+  }
+  .api-key-input {
+    flex: 1;
+    border: 1.5px solid #E2DDD8;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 14px;
+    font-family: monospace;
+    color: #2a2a2a;
+    background: #FDFCFA;
+    outline: none;
+  }
+  .api-key-input:focus { border-color: #A78BFA; }
+
   .generate-btn {
     background: #1E3A8A;
     color: #fff;
@@ -251,6 +275,10 @@
 </div>
 
 <div class="input-card">
+  <div class="api-key-row">
+    <label class="api-key-label" for="apiKey">API Key</label>
+    <input class="api-key-input" id="apiKey" type="password" placeholder="sk-ant-... (your Anthropic API key)" />
+  </div>
   <textarea id="inputText" placeholder="Paste a paragraph, quote, poem, or any text..."></textarea>
   <div class="input-footer">
     <span class="word-count" id="wordCount"></span>
@@ -288,6 +316,7 @@ const POS_COLORS = {
   verb: "#FCE7F3",
 };
 
+const apiKeyInput = document.getElementById("apiKey");
 const inputText   = document.getElementById("inputText");
 const wordCount   = document.getElementById("wordCount");
 const generateBtn = document.getElementById("generateBtn");
@@ -298,13 +327,21 @@ const mindmapCard = document.getElementById("mindmapCard");
 const vocabCard   = document.getElementById("vocabCard");
 const journeyCard = document.getElementById("journeyCard");
 
+function updateBtnState() {
+  const hasText = inputText.value.trim().length > 0;
+  const hasKey  = apiKeyInput.value.trim().length > 0;
+  generateBtn.disabled = !(hasText && hasKey);
+}
+
 inputText.addEventListener("input", () => {
   const val = inputText.value.trim();
-  generateBtn.disabled = val.length === 0;
   wordCount.textContent = val.length > 0
     ? val.split(/\s+/).filter(Boolean).length + " words"
     : "";
+  updateBtnState();
 });
+
+apiKeyInput.addEventListener("input", updateBtnState);
 
 generateBtn.addEventListener("click", generate);
 
@@ -354,9 +391,15 @@ ${text}
 """`;
 
   try {
+    const apiKey = apiKeyInput.value.trim();
     const res = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": apiKey,
+        "anthropic-version": "2023-06-01",
+        "anthropic-dangerous-direct-browser-access": "true",
+      },
       body: JSON.stringify({
         model: "claude-sonnet-4-20250514",
         max_tokens: 1500,
@@ -380,7 +423,7 @@ ${text}
     errorMsg.textContent = "Could not generate. Please try again.";
     errorMsg.style.display = "block";
   } finally {
-    generateBtn.disabled = !inputText.value.trim();
+    updateBtnState();
     generateBtn.textContent = "Generate";
   }
 }
