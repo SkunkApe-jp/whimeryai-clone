@@ -35,8 +35,8 @@
     width: 100%;
     max-width: 660px;
     background: #fff;
-    border-radius: 16px;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+    border-radius: 0;
+    box-shadow: 0 10px 15px rgba(0,0,0,.15),0 6px 6px rgba(0,0,0,.1);
     padding: 24px;
     margin-bottom: 28px;
   }
@@ -45,7 +45,7 @@
     width: 100%;
     min-height: 130px;
     border: 1.5px solid #E2DDD8;
-    border-radius: 10px;
+    border-radius: 0;
     padding: 14px 16px;
     font-size: 15px;
     font-family: Georgia, serif;
@@ -68,6 +68,10 @@
 
   /* Gear button */
   .gear-btn {
+    display: flex;
+    visibility: visible;
+    opacity: 0;
+    pointer-events: auto;
     position: fixed;
     top: 18px;
     right: 18px;
@@ -75,14 +79,18 @@
     height: 40px;
     background: #fff;
     border: 1.5px solid #E2DDD8;
-    border-radius: 50%;
+    border-radius: 0;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    transition: border-color 0.2s, box-shadow 0.2s;
+    transition: opacity 0.2s, border-color 0.2s, box-shadow 0.2s;
     z-index: 100;
+  }
+  .gear-btn:hover,
+  .gear-btn:focus-visible {
+    opacity: 1;
   }
   .gear-btn:hover {
     border-color: #A78BFA;
@@ -92,31 +100,32 @@
   .gear-btn.configured svg { fill: #16A34A; }
 
   .download-btn {
-    position: fixed;
-    right: 18px;
-    bottom: 18px;
+    position: absolute;
+    right: 16px;
+    bottom: 16px;
     width: 44px;
     height: 44px;
-    background: #fff;
-    border: 1.5px solid #E2DDD8;
-    border-radius: 50%;
+    background: rgba(255,255,255,0.96);
+    border: 1.5px solid #cfcfcf;
+    border-radius: 0;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    transition: border-color 0.2s, box-shadow 0.2s, opacity 0.2s;
-    z-index: 100;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.14);
+    transition: transform 0.15s, background 0.2s, box-shadow 0.2s, opacity 0.2s;
+    z-index: 5;
   }
   .download-btn:hover:not(:disabled) {
-    border-color: #A78BFA;
-    box-shadow: 0 2px 12px rgba(167,139,250,0.25);
+    background: #fff;
+    box-shadow: 0 5px 14px rgba(0,0,0,0.2);
+    transform: translateY(-1px);
   }
   .download-btn:disabled {
-    opacity: 0.45;
+    opacity: 0.65;
     cursor: not-allowed;
   }
-  .download-btn svg { width: 22px; height: 22px; fill: #6B6B6B; }
+  .download-btn svg { width: 20px; height: 20px; fill: #4b5563; }
 
   /* Modal overlay */
   .modal-overlay {
@@ -132,7 +141,7 @@
 
   .modal {
     background: #fff;
-    border-radius: 16px;
+    border-radius: 0;
     padding: 28px 24px 20px;
     width: 90%;
     max-width: 420px;
@@ -154,7 +163,7 @@
   .modal input, .modal select {
     width: 100%;
     border: 1.5px solid #E2DDD8;
-    border-radius: 8px;
+    border-radius: 0;
     padding: 9px 12px;
     font-size: 14px;
     font-family: monospace;
@@ -173,7 +182,7 @@
   .modal-cancel {
     background: none;
     border: 1.5px solid #E2DDD8;
-    border-radius: 8px;
+    border-radius: 0;
     padding: 8px 20px;
     font-size: 14px;
     font-family: Georgia, serif;
@@ -184,7 +193,7 @@
     background: #1E3A8A;
     color: #fff;
     border: none;
-    border-radius: 8px;
+    border-radius: 0;
     padding: 8px 20px;
     font-size: 14px;
     font-family: Georgia, serif;
@@ -196,7 +205,7 @@
     background: #1E3A8A;
     color: #fff;
     border: none;
-    border-radius: 10px;
+    border-radius: 0;
     padding: 10px 28px;
     font-size: 15px;
     font-family: Georgia, serif;
@@ -221,8 +230,8 @@
     max-width: 660px;
     height: 180px;
     background: #fff;
-    border-radius: 20px;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+    border-radius: 0;
+    box-shadow: 0 10px 15px rgba(0,0,0,.15),0 6px 6px rgba(0,0,0,.1);
     display: none;
     align-items: center;
     justify-content: center;
@@ -256,12 +265,15 @@
 
   .card {
     background: #fff;
-    border-radius: 20px;
+    border-radius: 0;
     padding: 32px 28px;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+    box-shadow: 0 10px 15px rgba(0,0,0,.15),0 6px 6px rgba(0,0,0,.1);
   }
 
-  .mindmap-card { padding: 20px 12px; }
+  .mindmap-card {
+    position: relative;
+    padding: 20px 12px 60px;
+  }
 
   /* Vocabulary Card */
   .vocab-word {
@@ -286,7 +298,7 @@
     margin-bottom: 24px;
   }
   .vocab-pos {
-    border-radius: 6px;
+    border-radius: 0;
     padding: 2px 10px;
     font-size: 13px;
     font-weight: 700;
@@ -309,7 +321,7 @@
     left: 50%;
     transform: translateX(-50%);
     background: #FDE68A;
-    border-radius: 20px;
+    border-radius: 0;
     padding: 4px 18px;
     font-size: 13px;
     font-weight: 700;
@@ -320,7 +332,7 @@
   }
   .fun-fact-body {
     background: #EFF6FF;
-    border-radius: 14px;
+    border-radius: 0;
     padding: 22px 18px 16px;
     font-size: 15px;
     color: #374151;
@@ -354,7 +366,7 @@
   }
   .journey-highlight {
     background: #DBEAFE;
-    border-radius: 10px;
+    border-radius: 0;
     padding: 14px 18px;
     font-size: 15px;
     font-weight: 600;
@@ -374,11 +386,6 @@
 <!-- Gear icon -->
 <button class="gear-btn" id="gearBtn" title="AI Settings">
   <svg viewBox="0 0 24 24"><path d="M19.14 12.94a7.07 7.07 0 0 0 .06-.94c0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96a7.04 7.04 0 0 0-1.62-.94l-.36-2.54a.48.48 0 0 0-.48-.41h-3.84a.48.48 0 0 0-.48.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.48.48 0 0 0-.59.22L2.74 8.87a.48.48 0 0 0 .12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.37 1.03.7 1.62.94l.36 2.54c.05.24.26.41.48.41h3.84c.24 0 .44-.17.48-.41l.36-2.54c.59-.24 1.13-.57 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.49.49 0 0 0-.12-.61l-2.03-1.58zM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2z"/></svg>
-</button>
-<button class="download-btn" id="downloadBtn" title="Download mindmap" disabled>
-  <svg viewBox="0 0 24 24" aria-hidden="true">
-    <path d="M5 20h14v-2H5v2zm7-18-5.5 5.5 1.41 1.41L11 5.83V16h2V5.83l3.09 3.08 1.41-1.41L12 2z"></path>
-  </svg>
 </button>
 
 <!-- Settings modal -->
@@ -424,21 +431,31 @@
 </div>
 
 <div class="results" id="results">
-  <div class="card mindmap-card" id="mindmapCard"></div>
+  <div class="card mindmap-card" id="mindmapCard">
+    <div id="mindmapCanvas"></div>
+    <button class="download-btn" id="downloadBtn" title="Download mindmap" disabled>
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M5 20h14v-2H5v2zm7-18-5.5 5.5 1.41 1.41L11 5.83V16h2V5.83l3.09 3.08 1.41-1.41L12 2z"></path>
+      </svg>
+    </button>
+  </div>
   <div class="card" id="vocabCard"></div>
   <div class="card" id="journeyCard"></div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
 <script>
-const COLORS = [
-  { node: "#C084FC", edge: "#C084FC", leaf: "#E9D5FF", text: "#581C87" },
-  { node: "#FDE047", edge: "#FDE047", leaf: "#FEF9C3", text: "#713F12" },
-  { node: "#86EFAC", edge: "#86EFAC", leaf: "#DCFCE7", text: "#14532D" },
-  { node: "#F9A8D4", edge: "#F9A8D4", leaf: "#FCE7F3", text: "#831843" },
-  { node: "#67E8F9", edge: "#67E8F9", leaf: "#CFFAFE", text: "#164E63" },
-];
-const CENTER_COLOR = { node: "#1E3A8A", text: "#FFFFFF" };
+const MINDMAP_STYLE = {
+  linkStroke: "#666",
+  linkOpacity: 0.7,
+  centerNodeFill: "#000",
+  centerTextFill: "#fff",
+  branchNodeFill: "#666",
+  branchTextFill: "#fff",
+  leafFill: "#fff",
+  leafStroke: "#666",
+  leafTextFill: "#000",
+};
 
 const POS_COLORS = {
   adj:  "#DBEAFE",
@@ -454,6 +471,7 @@ const errorMsg    = document.getElementById("errorMsg");
 const loadingCard = document.getElementById("loadingCard");
 const resultsDiv  = document.getElementById("results");
 const mindmapCard = document.getElementById("mindmapCard");
+const mindmapCanvas = document.getElementById("mindmapCanvas");
 const vocabCard   = document.getElementById("vocabCard");
 const journeyCard = document.getElementById("journeyCard");
 
@@ -530,19 +548,21 @@ cfgProvider.addEventListener("change", () => {
   cfgProvider.dataset.prevProvider = next;
 });
 
-gearBtn.addEventListener("click", () => {
-  const cfg = getConfig();
-  const providerDefaults = PROVIDER_DEFAULTS[cfg.provider];
-  cfgProvider.value = cfg.provider;
-  cfgProvider.dataset.prevProvider = cfg.provider;
-  cfgApiUrl.value = cfg.apiUrl;
-  cfgApiKey.value = cfg.apiKey;
-  cfgModel.value  = cfg.model;
-  cfgApiUrl.placeholder = providerDefaults.apiUrl;
-  cfgModel.placeholder  = providerDefaults.model;
-  cfgApiKey.placeholder = providerDefaults.keyPlaceholder;
-  modalOverlay.classList.add("open");
-});
+if (gearBtn) {
+  gearBtn.addEventListener("click", () => {
+    const cfg = getConfig();
+    const providerDefaults = PROVIDER_DEFAULTS[cfg.provider];
+    cfgProvider.value = cfg.provider;
+    cfgProvider.dataset.prevProvider = cfg.provider;
+    cfgApiUrl.value = cfg.apiUrl;
+    cfgApiKey.value = cfg.apiKey;
+    cfgModel.value  = cfg.model;
+    cfgApiUrl.placeholder = providerDefaults.apiUrl;
+    cfgModel.placeholder  = providerDefaults.model;
+    cfgApiKey.placeholder = providerDefaults.keyPlaceholder;
+    modalOverlay.classList.add("open");
+  });
+}
 
 modalCancel.addEventListener("click", () => modalOverlay.classList.remove("open"));
 modalOverlay.addEventListener("click", (e) => {
@@ -747,12 +767,11 @@ function renderMindmap(data) {
 
   clusters.forEach((cluster, ci) => {
     const angle = angles[ci];
-    const color = COLORS[ci % COLORS.length];
     const bx = cx + branchR * Math.cos(angle);
     const by = cy + branchR * Math.sin(angle);
 
-    edges.push({ x1: cx, y1: cy, x2: bx, y2: by, color: color.edge });
-    branches.push({ x: bx, y: by, label: cluster.name, color });
+    edges.push({ x1: cx, y1: cy, x2: bx, y2: by });
+    branches.push({ x: bx, y: by, label: cluster.name });
 
     const lvs = cluster.leaves || [];
     const lCount = lvs.length;
@@ -765,13 +784,13 @@ function renderMindmap(data) {
       const lx = bx + leafR * Math.cos(la);
       const ly = by + leafR * Math.sin(la);
 
-      edges.push({ x1: bx, y1: by, x2: lx, y2: ly, color: color.edge });
-      leaves.push({ x: lx, y: ly, label: leaf, color });
+      edges.push({ x1: bx, y1: by, x2: lx, y2: ly });
+      leaves.push({ x: lx, y: ly, label: leaf });
     });
   });
 
-  mindmapCard.innerHTML = "";
-  const svg = d3.select(mindmapCard)
+  mindmapCanvas.innerHTML = "";
+  const svg = d3.select(mindmapCanvas)
     .append("svg")
     .attr("id", "mindmapSvg")
     .attr("viewBox", `0 0 ${W} ${H}`)
@@ -788,10 +807,10 @@ function renderMindmap(data) {
     .attr("y1", d => d.y1)
     .attr("x2", d => d.x2)
     .attr("y2", d => d.y2)
-    .attr("stroke", d => d.color)
+    .attr("stroke", MINDMAP_STYLE.linkStroke)
     .attr("stroke-width", 6)
     .attr("stroke-linecap", "round")
-    .attr("opacity", 0.85);
+    .attr("opacity", MINDMAP_STYLE.linkOpacity);
 
   const leafGroup = svg.append("g")
     .selectAll("g")
@@ -810,27 +829,27 @@ function renderMindmap(data) {
       .attr("y", nd.y - h / 2)
       .attr("width", w)
       .attr("height", h)
-      .attr("rx", 8)
-      .attr("fill", nd.color.leaf)
-      .attr("stroke", nd.color.node)
-      .attr("stroke-width", 2);
+      .attr("rx", 0)
+      .attr("fill", MINDMAP_STYLE.leafFill)
+      .attr("stroke", MINDMAP_STYLE.leafStroke)
+      .attr("stroke-width", 1.5);
 
     g.append("rect")
       .attr("x", nd.x - w / 2)
       .attr("y", nd.y + h / 2 - 5)
       .attr("width", w)
       .attr("height", 5)
-      .attr("fill", nd.color.node)
-      .attr("opacity", 0.25);
+      .attr("fill", MINDMAP_STYLE.linkStroke)
+      .attr("opacity", 0.2);
 
     g.append("text")
       .attr("x", nd.x)
       .attr("y", nd.y + 1)
       .attr("text-anchor", "middle")
       .attr("dominant-baseline", "middle")
-      .attr("font-size", 14)
-      .attr("font-family", "Georgia, serif")
-      .attr("fill", nd.color.text)
+      .attr("font-size", 13)
+      .attr("font-family", "Arial, sans-serif")
+      .attr("fill", MINDMAP_STYLE.leafTextFill)
       .attr("font-weight", 500)
       .text(label);
   });
@@ -844,8 +863,8 @@ function renderMindmap(data) {
   branchGroup.append("circle")
     .attr("cx", d => d.x)
     .attr("cy", d => d.y)
-    .attr("r", 38)
-    .attr("fill", d => d.color.node)
+    .attr("r", 34)
+    .attr("fill", MINDMAP_STYLE.branchNodeFill)
     .attr("opacity", 0.95);
 
   branchGroup.each(function(nd) {
@@ -856,8 +875,8 @@ function renderMindmap(data) {
       nd.y,
       60,
       2,
-      13,
-      "#111",
+      12,
+      MINDMAP_STYLE.branchTextFill,
       700
     );
   });
@@ -866,7 +885,7 @@ function renderMindmap(data) {
     .attr("cx", cx)
     .attr("cy", cy)
     .attr("r", 52)
-    .attr("fill", CENTER_COLOR.node);
+    .attr("fill", MINDMAP_STYLE.centerNodeFill);
 
   drawWrappedText(
     svg,
@@ -875,8 +894,8 @@ function renderMindmap(data) {
     cy,
     84,
     2,
-    15,
-    CENTER_COLOR.text,
+    14,
+    MINDMAP_STYLE.centerTextFill,
     700
   );
 
