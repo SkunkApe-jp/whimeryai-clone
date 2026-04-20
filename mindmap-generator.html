@@ -561,6 +561,10 @@ ${text}
     });
 
     const data = await res.json();
+    if (!res.ok) {
+      const msg = data?.error?.message || `API request failed (HTTP ${res.status})`;
+      throw new Error(msg);
+    }
     const raw = (data.content || []).map(b => b.text || "").join("");
     const clean = raw.replace(/```json|```/g, "").trim();
     const parsed = JSON.parse(clean);
@@ -573,7 +577,7 @@ ${text}
     resultsDiv.style.display = "flex";
   } catch (e) {
     loadingCard.style.display = "none";
-    errorMsg.textContent = "Could not generate. Please try again.";
+    errorMsg.textContent = e.message || "Could not generate. Please try again.";
     errorMsg.style.display = "block";
   } finally {
     updateBtnState();
