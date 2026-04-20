@@ -125,7 +125,8 @@
     opacity: 0.65;
     cursor: not-allowed;
   }
-  .download-btn svg { width: 20px; height: 20px; fill: #4b5563; }
+  .download-btn svg { width: 20px; height: 20px; }
+  .download-btn { color: #4b5563; }
 
   /* Modal overlay */
   .modal-overlay {
@@ -434,8 +435,12 @@
   <div class="card mindmap-card" id="mindmapCard">
     <div id="mindmapCanvas"></div>
     <button class="download-btn" id="downloadBtn" title="Download mindmap" disabled>
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M5 20h14v-2H5v2zm7-18-5.5 5.5 1.41 1.41L11 5.83V16h2V5.83l3.09 3.08 1.41-1.41L12 2z"></path>
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12 2v8"></path>
+        <path d="m16 6-4 4-4-4"></path>
+        <rect width="20" height="8" x="2" y="14" rx="2"></rect>
+        <path d="M6 18h.01"></path>
+        <path d="M10 18h.01"></path>
       </svg>
     </button>
   </div>
